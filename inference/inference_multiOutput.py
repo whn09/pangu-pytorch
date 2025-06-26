@@ -26,7 +26,7 @@ from era5_data import utils, utils_data
 
 from models.pangu_sample import get_wind_speed
 
-visualize = False  # True/False
+visualize = True  # True/False
 only_use_wind_speed_loss = True  # True/False
 use_custom_mask = True  # True/False
 lead_time = 10  # TODO Forecast 10 days
@@ -144,7 +144,7 @@ for data in tqdm(test_dataloader):
 
     # Store initial input for different models
     input, input_surface, target, target_surface, periods = data
-    # print('periods:', periods)
+    print('periods:', periods)
     # print('input:', input.shape)
     # print('input_surface:', input_surface.shape)
     # print('target:', target.shape)
@@ -170,7 +170,7 @@ for data in tqdm(test_dataloader):
     # multi-step prediction for single output
     for space in range(spaces):
         current_time = input_time + timedelta(hours=freq*(space+1))
-        # print("predicting on....", current_time)
+        print("predicting on....", current_time)
 
         # Call the model pretrained for 24 hours forecast
         start = time.time()
@@ -259,7 +259,7 @@ for data in tqdm(test_dataloader):
                 
             utils.visuailze(output,
                             target, 
-                            input.numpy().astype(np.float32).squeeze(),
+                            input.astype(np.float32).squeeze(),  # .numpy()
                             var='t',
                             z=2,
                             step=target_time, 
@@ -267,14 +267,14 @@ for data in tqdm(test_dataloader):
 
             utils.visuailze_surface(output_surface,
                                     target_surface, 
-                                    input_surface.numpy().astype(np.float32).squeeze(),
+                                    input_surface.astype(np.float32).squeeze(),  # .numpy()
                                     var='u10',
                                     step=target_time, 
                                     path=png_path)
             
             utils.visuailze_surface(output_surface,
                                     target_surface, 
-                                    input_surface.numpy().astype(np.float32).squeeze(),
+                                    input_surface.astype(np.float32).squeeze(),  # .numpy()
                                     var='v10',
                                     step=target_time, 
                                     path=png_path)
@@ -325,6 +325,8 @@ for data in tqdm(test_dataloader):
                         "rmse")
     utils.save_errorScores(csv_path, acc_upper_z, acc_upper_q,
                         acc_upper_t, acc_upper_u, acc_upper_v, None, acc_surface, None, "acc")
+    
+    break
 
 test_loss /= len(test_dataloader)
 print('test_loss:', test_loss)
