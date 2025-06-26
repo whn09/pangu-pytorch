@@ -58,31 +58,110 @@ class logger_print(object):
         pass
 
 
-def visuailze(output, target, input, var, z, step, path):
-    # levels = np.linspace(-30, 90, 9)
+# def visuailze(output, target, input, var, z, step, path, mask=None):
+#     # levels = np.linspace(-30, 90, 9)
+#     variables = cfg.ERA5_UPPER_VARIABLES
+#     var = variables.index(var)
+#     fig = plt.figure(figsize=(16, 2))
+#     ax1 = fig.add_subplot(143)
+
+#     # , levels = levels, extend = 'min')
+#     plot1 = ax1.imshow(output[var, z, :, :], cmap="RdBu")
+#     plt.colorbar(plot1, ax=ax1, fraction=0.05, pad=0.05)
+#     ax1.title.set_text('pred')
+
+#     ax2 = fig.add_subplot(142)
+#     plot2 = ax2.imshow(target[var, z, :, :], cmap="RdBu")
+#     plt.colorbar(plot2, ax=ax2, fraction=0.05, pad=0.05)
+#     ax2.title.set_text('gt')
+
+#     ax3 = fig.add_subplot(141)
+#     plot3 = ax3.imshow(input[var, z, :, :], cmap="RdBu")
+#     plt.colorbar(plot3, ax=ax3, fraction=0.05, pad=0.05)
+#     ax3.title.set_text('input')
+
+#     ax4 = fig.add_subplot(144)
+#     plot4 = ax4.imshow(output[var, z, :, :] -
+#                        target[var, z, :, :], cmap="RdBu")
+#     plt.colorbar(plot4, ax=ax4, fraction=0.05, pad=0.05)
+#     ax4.title.set_text('bias')
+
+#     plt.tight_layout()
+#     plt.savefig(fname=os.path.join(
+#         path, '{}_{}_Z{}'.format(step, variables[var], z)))
+
+#     plt.close()
+
+
+# def visuailze_surface(output, target, input, var, step, path, mask=None):
+#     variables = cfg.ERA5_SURFACE_VARIABLES
+#     var = variables.index(var)
+#     fig = plt.figure(figsize=(16, 2))
+#     ax1 = fig.add_subplot(143)
+#     # ? to do?
+#     # levels = np.linspace(93000, 105000, 9)
+#     # , levels = levels, extend = 'min')
+#     plot1 = ax1.imshow(output[var, :, :], cmap="RdBu")
+#     plt.colorbar(plot1, ax=ax1, fraction=0.05, pad=0.05)
+#     ax1.title.set_text('pred')
+
+#     ax2 = fig.add_subplot(142)
+#     plot2 = ax2.imshow(target[var, :, :], cmap="RdBu")
+#     plt.colorbar(plot2, ax=ax2, fraction=0.05, pad=0.05)
+#     ax2.title.set_text('gt')
+
+#     ax3 = fig.add_subplot(141)
+#     plot3 = ax3.imshow(input[var, :, :], cmap="RdBu")
+#     plt.colorbar(plot3, ax=ax3, fraction=0.05, pad=0.05)
+#     ax3.title.set_text('input')
+
+#     ax4 = fig.add_subplot(144)
+#     plot4 = ax4.imshow(output[var, :, :] - target[var, :, :], cmap="RdBu")
+#     plt.colorbar(plot4, ax=ax4, fraction=0.05, pad=0.05)
+#     ax4.title.set_text('bias')
+
+#     plt.tight_layout()
+#     plt.savefig(fname=os.path.join(path, '{}_{}'.format(step, variables[var])))
+
+#     plt.close()
+
+def visuailze(output, target, input, var, z, step, path, mask=None):
     variables = cfg.ERA5_UPPER_VARIABLES
     var = variables.index(var)
     fig = plt.figure(figsize=(16, 2))
-    ax1 = fig.add_subplot(143)
+    
+    # 如果提供了mask，预处理数据
+    if mask is not None:
+        # 将mask转换为布尔型，0的地方为False，1的地方为True
+        mask_bool = mask.detach().cpu().numpy().astype(bool)
+        # 创建masked数据，将mask为0的地方设为NaN
+        output_masked = np.where(mask_bool, output[var, z, :, :], np.nan)
+        target_masked = np.where(mask_bool, target[var, z, :, :], np.nan)
+        input_masked = np.where(mask_bool, input[var, z, :, :], np.nan)
+        bias_masked = np.where(mask_bool, output[var, z, :, :] - target[var, z, :, :], np.nan)
+    else:
+        output_masked = output[var, z, :, :]
+        target_masked = target[var, z, :, :]
+        input_masked = input[var, z, :, :]
+        bias_masked = output[var, z, :, :] - target[var, z, :, :]
 
-    # , levels = levels, extend = 'min')
-    plot1 = ax1.imshow(output[var, z, :, :], cmap="RdBu")
+    ax1 = fig.add_subplot(143)
+    plot1 = ax1.imshow(output_masked, cmap="RdBu")
     plt.colorbar(plot1, ax=ax1, fraction=0.05, pad=0.05)
     ax1.title.set_text('pred')
 
     ax2 = fig.add_subplot(142)
-    plot2 = ax2.imshow(target[var, z, :, :], cmap="RdBu")
+    plot2 = ax2.imshow(target_masked, cmap="RdBu")
     plt.colorbar(plot2, ax=ax2, fraction=0.05, pad=0.05)
     ax2.title.set_text('gt')
 
     ax3 = fig.add_subplot(141)
-    plot3 = ax3.imshow(input[var, z, :, :], cmap="RdBu")
+    plot3 = ax3.imshow(input_masked, cmap="RdBu")
     plt.colorbar(plot3, ax=ax3, fraction=0.05, pad=0.05)
     ax3.title.set_text('input')
 
     ax4 = fig.add_subplot(144)
-    plot4 = ax4.imshow(output[var, z, :, :] -
-                       target[var, z, :, :], cmap="RdBu")
+    plot4 = ax4.imshow(bias_masked, cmap="RdBu")
     plt.colorbar(plot4, ax=ax4, fraction=0.05, pad=0.05)
     ax4.title.set_text('bias')
 
@@ -93,30 +172,43 @@ def visuailze(output, target, input, var, z, step, path):
     plt.close()
 
 
-def visuailze_surface(output, target, input, var, step, path):
+def visuailze_surface(output, target, input, var, step, path, mask=None):
     variables = cfg.ERA5_SURFACE_VARIABLES
     var = variables.index(var)
     fig = plt.figure(figsize=(16, 2))
+    
+    # 如果提供了mask，预处理数据
+    if mask is not None:
+        # 将mask转换为布尔型，0的地方为False，1的地方为True
+        mask_bool = mask.detach().cpu().numpy().astype(bool)
+        # 创建masked数据，将mask为0的地方设为NaN
+        output_masked = np.where(mask_bool, output[var, :, :], np.nan)
+        target_masked = np.where(mask_bool, target[var, :, :], np.nan)
+        input_masked = np.where(mask_bool, input[var, :, :], np.nan)
+        bias_masked = np.where(mask_bool, output[var, :, :] - target[var, :, :], np.nan)
+    else:
+        output_masked = output[var, :, :]
+        target_masked = target[var, :, :]
+        input_masked = input[var, :, :]
+        bias_masked = output[var, :, :] - target[var, :, :]
+
     ax1 = fig.add_subplot(143)
-    # ? to do?
-    # levels = np.linspace(93000, 105000, 9)
-    # , levels = levels, extend = 'min')
-    plot1 = ax1.imshow(output[var, :, :], cmap="RdBu")
+    plot1 = ax1.imshow(output_masked, cmap="RdBu")
     plt.colorbar(plot1, ax=ax1, fraction=0.05, pad=0.05)
     ax1.title.set_text('pred')
 
     ax2 = fig.add_subplot(142)
-    plot2 = ax2.imshow(target[var, :, :], cmap="RdBu")
+    plot2 = ax2.imshow(target_masked, cmap="RdBu")
     plt.colorbar(plot2, ax=ax2, fraction=0.05, pad=0.05)
     ax2.title.set_text('gt')
 
     ax3 = fig.add_subplot(141)
-    plot3 = ax3.imshow(input[var, :, :], cmap="RdBu")
+    plot3 = ax3.imshow(input_masked, cmap="RdBu")
     plt.colorbar(plot3, ax=ax3, fraction=0.05, pad=0.05)
     ax3.title.set_text('input')
 
     ax4 = fig.add_subplot(144)
-    plot4 = ax4.imshow(output[var, :, :] - target[var, :, :], cmap="RdBu")
+    plot4 = ax4.imshow(bias_masked, cmap="RdBu")
     plt.colorbar(plot4, ax=ax4, fraction=0.05, pad=0.05)
     ax4.title.set_text('bias')
 
@@ -124,8 +216,7 @@ def visuailze_surface(output, target, input, var, step, path):
     plt.savefig(fname=os.path.join(path, '{}_{}'.format(step, variables[var])))
 
     plt.close()
-
-
+    
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)

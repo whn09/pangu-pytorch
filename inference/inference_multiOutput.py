@@ -263,21 +263,24 @@ for data in tqdm(test_dataloader):
                             var='t',
                             z=2,
                             step=target_time, 
-                            path=png_path)
+                            path=png_path,
+                            mask=mask)
 
             utils.visuailze_surface(output_surface,
                                     target_surface, 
                                     input_surface.astype(np.float32).squeeze(),  # .numpy()
                                     var='u10',
                                     step=target_time, 
-                                    path=png_path)
+                                    path=png_path,
+                                    mask=mask)
             
             utils.visuailze_surface(output_surface,
                                     target_surface, 
                                     input_surface.astype(np.float32).squeeze(),  # .numpy()
                                     var='v10',
                                     step=target_time, 
-                                    path=png_path)
+                                    path=png_path,
+                                    mask=mask)
             
         rmse_upper_z[target_time] = score.weighted_rmse_torch_channels(
             output[0], target[0], mask).numpy()

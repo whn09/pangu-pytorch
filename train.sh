@@ -79,4 +79,8 @@ torchrun --nproc_per_node 8 --nnodes 1 finetune/finetune_fully.py --load_pretrai
 # s5cmd sync /opt/dlami/nvme/model/ s3://datalab/nsf-ncar-era5/model/
 # s5cmd sync s3://datalab/nsf-ncar-era5/model/* /opt/dlami/nvme/model/
 
+# For PanguWeather onnx model
 # python inference/inference_multiOutput.py
+
+# For PanguWeather pytorch fine-tuned model
+# python inference/inference_mix_multiOutput.py
